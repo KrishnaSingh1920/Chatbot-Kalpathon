@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexGenTube</title>
+    <style>
+        :root {
+          --chat-bg: #1e1e1e;
+          --chat-surface: #2a2a2a;
+          --chat-text: #f1f1f1;
+          --chat-bot-bg: #3a3a3a;
+          --chat-user-bg: #505050;
+          --chat-border: #838383;
+        }
+    
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Arial', sans-serif;
+        }
+    
+        body {
+          background-color: var(--chat-bg);
+          color: var(--chat-text);
+          line-height: 1.6;
+        }
+    
+        /* Navigation */
+        .nav {
+          position: fixed;
+          top: 0;
+          width: 100%;
+          padding: 1rem 2rem;
+          background: linear-gradient(180deg, var(--chat-bg) 0%, rgba(30, 30, 30, 0.9) 100%);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          z-index: 1000;
+          border-bottom: 1px solid var(--chat-border);
+          backdrop-filter: blur(6px);
+        }
+    
+        .logo {
+          font-size: 2rem;
+          font-weight: 700;
+          background: linear-gradient(45deg, var(--chat-text), var(--chat-border));
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          transition: transform 0.3s ease;
+        }
+    
+        .logo:hover {
+          transform: scale(1.05);
+        }
+    
+        .nav-items {
+          display: flex;
+          gap: 1.5rem;
+        }
+    
+        .nav-item {
+          cursor: pointer;
+          transition: all 0.3s ease;
+          padding: 0.5rem 1rem;
+          border-radius: 6px;
+          font-weight: 500;
+        }
+    
+        .nav-item:hover {
+          background: linear-gradient(45deg, var(--chat-surface), var(--chat-bot-bg));
+          transform: translateY(-2px);
+        }
+    
+        .menu-toggle {
+          display: none;
+          cursor: pointer;
+          font-size: 1.5rem;
+          color: var(--chat-text);
+        }
+    
+        /* Mobile Menu */
+        .mobile-menu {
+          display: none;
+          position: fixed;
+          top: 4.5rem;
+          left: 0;
+          right: 0;
+          background: linear-gradient(45deg, var(--chat-surface), var(--chat-bg));
+          padding: 1rem;
+          z-index: 999;
+          transform: translateY(-20px);
+          opacity: 0;
+          transition: all 0.3s ease;
+        }
+    
+        .mobile-menu.active {
+          transform: translateY(0);
+          opacity: 1;
+        }
+    
+        .mobile-nav-items {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+    
+        .mobile-nav-item {
+          padding: 1rem;
+          border-radius: 4px;
+          background: var(--chat-bot-bg);
+          transition: all 0.3s ease;
+        }
+    
+        .mobile-nav-item:hover {
+          background: var(--chat-user-bg);
+        }
+    
+        /* Hero Section */
+        .hero {
+          margin-top: 4.5rem;
+          height: 80vh;
+          background: linear-gradient(45deg, var(--chat-bg) 0%, transparent 100%),
+            url('HeroImage.jpg') center/cover no-repeat;
+          position: relative;
+        }
+    
+        .hero-content {
+          position: absolute;
+          bottom: 3rem;
+          left: 2rem;
+          max-width: 600px;
+        }
+    
+        .hero-title {
+          font-size: 3.2rem;
+          margin-bottom: 1.5rem;
+          background: linear-gradient(45deg, var(--chat-text), var(--chat-border));
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+    
+        .hero-buttons {
+          display: flex;
+          gap: 1rem;
+        }
+    
+        /* Buttons */
+        .btn {
+          padding: 0.8rem 2rem;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.3s ease;
+          border: 1px solid var(--chat-border);
+          color: white;
+        }
+    
+        .btn-primary {
+          background: linear-gradient(45deg, var(--chat-surface), var(--chat-bot-bg));
+        }
+    
+        .btn-secondary {
+          background: linear-gradient(45deg, var(--chat-bot-bg), var(--chat-user-bg));
+        }
+    
+        .btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+        }
+    
+        /* Content Rows */
+        .content-row {
+          padding: 2rem;
+          background: linear-gradient(45deg, var(--chat-bg), var(--chat-surface));
+          margin: 2rem 1rem;
+          border-radius: 10px;
+        }
+    
+        .row-title {
+          margin-bottom: 1.5rem;
+          font-size: 1.6rem;
+          padding: 0.5rem;
+          border-left: 4px solid var(--chat-border);
+          transition: all 0.3s ease;
+        }
+    
+        .row-title:hover {
+          padding-left: 1rem;
+        }
+    
+        .card-container {
+          display: flex;
+          gap: 1rem;
+          overflow-x: auto;
+          padding-bottom: 1rem;
+          scroll-snap-type: x mandatory;
+        }
+    
+        .card {
+          min-width: 280px;
+          height: 180px;
+          background: linear-gradient(45deg, var(--chat-surface), var(--chat-bot-bg));
+          border-radius: 8px;
+          overflow: hidden;
+          position: relative;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          border: 1px solid var(--chat-border);
+          flex-shrink: 0;
+          scroll-snap-align: start;
+        }
+    
+        .card:hover {
+          transform: scale(1.05);
+          z-index: 10;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+    
+        .card img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          filter: grayscale(15%) contrast(1.1);
+        }
+    
+        .card-overlay {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: linear-gradient(transparent, var(--chat-bg) 90%);
+          padding: 1rem;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+    
+        .card:hover .card-overlay {
+          opacity: 1;
+        }
+    
+        /* Footer */
+        .footer {
+          padding: 3rem 2rem;
+          background: linear-gradient(45deg, var(--chat-surface), var(--chat-bg));
+          margin-top: 3rem;
+          border-top: 1px solid var(--chat-border);
+        }
+    
+        .footer-columns {
+          display: flex;
+          gap: 3rem;
+          flex-wrap: wrap;
+          justify-content: space-between;
+        }
+    
+        .footer-column {
+          min-width: 200px;
+        }
+    
+        .footer-links {
+          list-style: none;
+          margin-top: 1.5rem;
+        }
+    
+        .footer-link {
+          margin: 0.5rem 0;
+          cursor: pointer;
+          padding: 0.5rem;
+          border-radius: 3px;
+          transition: all 0.3s ease;
+        }
+    
+        .footer-link:hover {
+          background: linear-gradient(45deg, var(--chat-surface), transparent);
+          transform: translateX(8px);
+        }
+    
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .nav-items {
+            display: none;
+          }
+    
+          .menu-toggle {
+            display: block;
+          }
+    
+          .logo {
+            font-size: 1.6rem;
+          }
+    
+          .hero {
+            height: 60vh;
+            margin-top: 3.5rem;
+          }
+    
+          .hero-content {
+            left: 1rem;
+            bottom: 2rem;
+          }
+    
+          .hero-title {
+            font-size: 2.2rem;
+          }
+    
+          .content-row {
+            padding: 1.5rem 1rem;
+          }
+    
+          .card {
+            min-width: 250px;
+            height: 150px;
+          }
+    
+          .footer-columns {
+            gap: 2rem;
+          }
+        }
+      </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="logo">NexGenTube</div>
+        <div class="nav-items">
+            <div class="nav-item">Home</div>
+            <div class="nav-item">TV Shows</div>
+            <div class="nav-item">Movies</div>
+            <div class="nav-item">New & Popular</div>
+        </div>
+        <div class="menu-toggle">☰</div>
+    </nav>
+
+    <div class="mobile-menu">
+        <div class="mobile-nav-items">
+            <div class="mobile-nav-item">Home</div>
+            <div class="mobile-nav-item">TV Shows</div>
+            <div class="mobile-nav-item">Movies</div>
+            <div class="mobile-nav-item">New & Popular</div>
+        </div>
+    </div>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Avengers Endgame</h1>
+            <div class="hero-buttons">
+                <button class="btn btn-primary">▶ Play</button>
+                <button class="btn btn-secondary">More Info</button>
+            </div>
+        </div>
+    </section>
+
+    <main>
+        <section class="content-row">
+            <h2 class="row-title">Trending Now</h2>
+            <div class="card-container">
+                <!-- Repeat 10x -->
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <!-- Additional cards -->
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABfqe9kKVd9FNasX73KPSq5kM_0qBYnS2adRNHE3wk05DI_a1Lmlq1PuxFcozaTk1a9WwBfUHlbeq9g7UukGxS0SOnAHlblXfslk.jpg?r=8d0"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABcSgv0LeZ0fkOUz3vTnkqIwdUatNzXIWjIWSGYi3LLEqG1UkI8w2wDDK534g64GWTgikgJIjPDIzRgZtfEGTckehMjYAZIn7OYQ.jpg?r=bd8"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABf2zczHI80brljN8c5jlbePfAJeb6K-yr_6K0580dd5OQ61GEOHcs05a-WaDSVDoWmxPuog9hqMj2G0GazfBul6IlBbCFQ0rv_w.jpg?r=a20"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABReb4-YfHiPmPE0KgVjJnc36JYve1w5QXNFFDR6kUfQxRfpIB78con44cVmfhP7L-fL7QeJJ62nruRNd1-DTjM2FYvdcO2bJXrQ.jpg?r=d58"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Repeat 5x content rows -->
+        <section class="content-row">
+            <h2 class="row-title">New Releases</h2>
+            <div class="card-container">
+                <!-- Repeat 10x -->
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABbtK2MfCqxPic8sleywm6uZtH9D4Tq0ZuYmoB66ycuA8bM-Lqp7ayyuV3poJOdgOLM9-AZKavqiClWam2YZ4jdoHBlJNY_sc1ns.jpg?r=080"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <!-- Additional cards -->
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABR871v8B_5W4-2bL3zy0-l1jI1d_kDdYwjnAQXO84kUMxrrbFDunGwXrJN1H_TbQ3qqap3HbzIMjw8HyQuWDGhfgHarGKPtE6JfLZ-awelcRb_ipCja19iEU7yNWXTtp7yvN.jpg?r=347"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABaUYpeKV4HeMYAxpzrCkNUaebDB38H0hxhNX_hrOp1IAek1as1WclOv624COPWefwIfpRoacacph0OIMPZdhypACDG2JpZLTpbk.jpg?r=13f"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABRqA4pJ_AV1LAL6oCqnLNMn_T84KXD8QylsFxjCtKi9Se8A7EXFUABsOLZ7azbX9KtFm1d2b3GmtlUENmzubQkQq4GxFVv-JJjo.jpg?r=c0a"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://occ-0-6246-2164.1.nflxso.net/dnm/api/v6/Qs00mKCpRvrkl3HZAN5KwEL1kpE/AAAABZcGhPx3KOPW6N5CteKHwmLLfhQHeoslsPqHL7w1-V8XJwAXk7aWPSOtAPtbTN1Av8qjoJL0IXtvRyBZc8-LMG1QN7sKpkQ_xo9sXX-fi5WWoYgp0rk2qBYIn_GSVvu9UENf9TGA9rTMLkmLWEsRhsRu1oeLrADEjevmyGjwdzcAskJhRAK_idQjtRQU-uqcT_F94Wci0DBtWV6ugfUb44vfRORwCh3A9uZaZVY.jpg?r=1ed"
+                        alt="Content">
+                    <div class="card-overlay">
+                        <h3>Movie Title</h3>
+                        <p>Action • 2024</p>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-columns">
+            <div class="footer-column">
+                <h3>Categories</h3>
+                <ul class="footer-links">
+                    <li class="footer-link">Action</li>
+                    <li class="footer-link">Comedy</li>
+                    <li class="footer-link">Drama</li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Legal</h3>
+                <ul class="footer-links">
+                    <li class="footer-link">Privacy Policy</li>
+                    <li class="footer-link">Terms of Service</li>
+                    <li class="footer-link">Cookie Settings</li>
+                </ul>
+            </div>
+            <!-- Add more columns -->
+        </div>
+        
+        
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        const menuToggle = document.querySelector('.menu-toggle');
+        const mobileMenu = document.querySelector('.mobile-menu');
+
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            mobileMenu.classList.toggle('active');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.mobile-menu') && mobileMenu.classList.contains('active')) {
+                mobileMenu.classList.remove('active');
+            }
+        });
+    </script>
+    <script src="NexGenChatBot.js" type="module" data-api-key="GEMINI_API_KEY" data-sheet-url="https://docs.google.com/spreadsheets/d/1YhFUSC9o3d7kE-8nyuXrnn-cN968oYC_phVqCrTKWS4/gviz/tq?tqx=out:json&sheet=Sheet1" data-email="support@example.com"></script>></script>
+</body>
+
+</html>
