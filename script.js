@@ -72,7 +72,7 @@ const pricingToggle = document.getElementById('pricing-toggle');
 if (pricingToggle) {
   pricingToggle.addEventListener('change', (e) => {
     const prices = document.querySelectorAll('.amount');
-    const annualPrices = ['₹1000', '₹2999', '₹5999'];
+    const annualPrices = ['₹999', '₹2999', '₹5999'];
     const monthlyPrices = ['₹159', '₹499', '₹999'];
     
     prices.forEach((price, index) => {
